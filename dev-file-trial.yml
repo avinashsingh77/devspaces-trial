@@ -1,10 +1,11 @@
- schemaVersion: 2.1.0
- metadata:
-   name: helloworld-example
- components:
-   - name: dev-tooling
-     container:
-       image: quay.io/devfile/universal-developer-image:ubi8-latest
-+      endpoints:
-+        - name: http-3000
-+          targetPort: 3000
+schemaVersion: 2.1.0
+metadata:
+  name: my-example
+attributes:
+  che-theia.eclipse.org/sidecar-policy: USE_DEV_CONTAINER
+components:
+  - name: tools
+    container:
+      image: registry.access.redhat.com/ubi8/openjdk-11
+      command: ['tail']
+      args: ['-f', '/dev/null']
