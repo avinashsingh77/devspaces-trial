@@ -1,11 +1,58 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.2.0
 metadata:
-  name: my-example
+  name: golang
+  namespace: odhdmp-devspaces
 attributes:
-  che-theia.eclipse.org/sidecar-policy: USE_DEV_CONTAINER
+  controller.devfile.io/devworkspace-config:
+    name: devworkspace-config
+    namespace: rainforest-workspaces
+  controller.devfile.io/scc: container-build
+  controller.devfile.io/storage-type: per-user
+projects:
+  - name: golang-health-check
+    zip:
+      location: http://devfile-registry.rainforest-workspaces.svc:8080/resources/v2/golang-health-check.zip
 components:
-  - name: tools
+  - attributes:
+      controller.devfile.io/merge-contribution: true
     container:
-      image: registry.access.redhat.com/ubi8/openjdk-11
-      command: ['tail']
-      args: ['-f', '/dev/null']
+      endpoints:
+        - exposure: public
+          name: health-check-endpoint
+          protocol: http
+          targetPort: 8080
+      env:
+        - name: GOCACHE
+          value: /tmp/.cache
+        - name: CHE_DASHBOARD_URL
+          value: https://devspaces.apps.foo.sandbox1578.opentlc.com
+        - name: CHE_PLUGIN_REGISTRY_URL
+          value: https://devspaces.apps.foo.sandbox1578.opentlc.com/plugin-registry/v3
+        - name: CHE_PLUGIN_REGISTRY_INTERNAL_URL
+          value: http://plugin-registry.rainforest-workspaces.svc:8080/v3
+        - name: CLUSTER_CONSOLE_URL
+          value: https://console-openshift-console.apps.foo.sandbox1578.opentlc.com
+        - name: CLUSTER_CONSOLE_TITLE
+          value: OpenShift console
+        - name: OPENVSX_REGISTRY_URL
+          value: ''
+      image: registry.redhat.io/devspaces/udi-rhel8@sha256:b1f112760b2640b5e8612869536a000612837e8e247c74d3d99e9fcfbc56d2f3
+      memoryLimit: 2Gi
+      mountSources: true
+      sourceMapping: /projects
+    name: tools
+commands:
+  - exec:
+      commandLine: go build
+      component: tools
+      group:
+        kind: build
+      workingDir: ${PROJECTS_ROOT}/golang-health-check
+    id: build
+  - exec:
+      commandLine: ./golang-health-check
+      component: tools
+      group:
+        kind: run
+      workingDir: ${PROJECTS_ROOT}/golang-health-check
+    id: run
